@@ -1,2 +1,2 @@
 # osTicket
-add fiur Schedule
+add fitur Schedule

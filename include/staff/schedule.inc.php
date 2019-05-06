@@ -50,7 +50,8 @@ if($schedule && $_REQUEST['a']!='add'){
         $info['mail_fetchmax'] = 10;
     if (!isset($info['smtp_auth']))
         $info['smtp_auth'] = 1;
- */   $qs += array('a' => $_REQUEST['a']);
+ */   
+$qs += array('a' => $_REQUEST['a']);
 
 }
 $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
@@ -79,15 +80,15 @@ $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
                 <?php echo __('Assign to');?>
             </td>
             <td>
-                <select id="schedule_id" name="schedule_id">
+                <select id="username" name="username">
                     <option value="0" selected="selected">&mdash; <?php echo __('Select an Agent OR a Team');?> &mdash;</option>
                     <?php
                     if(($users=Staff::getAvailableStaffMembers())) {
                         echo '<OPTGROUP label="'.sprintf(__('Agents (%d)'), count($users)).'">';
                         foreach($users as $id => $name) {
-                            $k="s$id";
+                            $k="$id";
                             echo sprintf('<option value="%s" %s>%s</option>',
-                                        $k,(($info['schedule_id']==$k)?'selected="selected"':''),$name);
+                                        $name,(($info['schedule_id']==$id)?'selected="selected"':''),$name);
                         }
                         echo '</OPTGROUP>';
                     }
@@ -95,9 +96,9 @@ $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
                     if(($teams=Team::getActiveTeams())) {
                         echo '<OPTGROUP label="'.sprintf(__('Teams (%d)'), count($teams)).'">';
                         foreach($teams as $id => $name) {
-                            $k="t$id";
+                            $k="$id";
                             echo sprintf('<option value="%s" %s>%s</option>',
-                                        $k,(($info['schedule_id']==$k)?'selected="selected"':''),$name);
+                                        $name,(($info['schedule_id']==$id)?'selected="selected"':''),$name);
                         }
                         echo '</OPTGROUP>';
                     }
@@ -123,8 +124,8 @@ $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
                     }
                 ?>
             <td>
-                <input class="dp" id="date_start" name="date_start" value="<?php echo Format::htmlchars($info['duedate']); ?>" size="12" autocomplete=OFF>
-                &nbsp;<font class="error">&nbsp;<?php echo $errors['duedate']; ?></font>
+                <input type="datetime" class="dp" id="date_start" name="date_start" value="<?php echo Format::htmlchars($info['date_start']); ?>" size="12" autocomplete=OFF>
+                &nbsp;<font class="error">&nbsp;<?php echo $errors['date_start']; ?></font>
             <i class="help-tip icon-question-sign" href="#new_ticket_department"></i>
 
             </td>
@@ -135,8 +136,8 @@ $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
             </td>
 		<span>
 			<td>
-                <input class="dp" id="date_end" name="date_end" value="<?php echo Format::htmlchars($info['duedate']); ?>" size="12" autocomplete=OFF>
-                &nbsp;<font class="error">&nbsp;<?php echo $errors['duedate']; ?></font>
+                <input type="datetime" class="dp" id="date_end" name="date_end" value="<?php echo Format::htmlchars($info['date_end']); ?>" size="12" autocomplete=OFF>
+                &nbsp;<font class="error">&nbsp;<?php echo $errors['date_end']; ?></font>
             <i class="help-tip icon-question-sign" href="#new_ticket_priority"></i>
             </td>
 			

@@ -224,7 +224,7 @@ class AdminNav extends StaffNav{
             $tabs['manage']=array('desc'=>__('Manage'),'href'=>'helptopics.php','title'=>__('Manage Options'));
             $tabs['emails']=array('desc'=>__('Emails'),'href'=>'emails.php','title'=>__('Email Settings'));
             //TAMBAHAN_HASNA
-            $tabs['schedules']=array('desc'=>__('Schedule'),'href'=>'schedules.php','title'=>__('Manage Schedule'));
+            $tabs['schedule']=array('desc'=>__('Schedules'),'href'=>'schedules.php','title'=>__('Manage Schedule'));
             $tabs['staff']=array('desc'=>__('Agents'),'href'=>'staff.php','title'=>__('Manage Agents'));
             if (count($this->getRegisteredApps()))
                 $tabs['apps']=array('desc'=>__('Applications'),'href'=>'apps.php','title'=>__('Applications'));
@@ -275,7 +275,7 @@ class AdminNav extends StaffNav{
                     break;
                     //TAMBAHAN_HASNA
                 case 'schedule':
-                    $subnav[]=array('desc'=>__('schedule'),'href'=>'schedule.php', 'title'=>__('manage schedule'), 'iconclass'=>'emailSettings');
+                    $subnav[]=array('desc'=>__('Schedule'),'href'=>'schedules.php', 'title'=>__('manage schedule'), 'iconclass'=>'emailSettings'); //href nama file kurang s, harus sesuai dengan didalam folder scp/
                     break;
                 case 'staff':
                     $subnav[]=array('desc'=>__('Agents'),'href'=>'staff.php','iconclass'=>'users');

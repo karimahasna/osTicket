@@ -256,178 +256,39 @@ class Schedule extends VerySimpleModel {
             $errors['err']=__('Get technical help!')
                 .' '.__('Internal error occurred');
 
-                echo "<pre>";
-                var_dump(Validator::is_schedule($vars['schedule']));
-                echo "</pre>";
-                die();
+                // echo "<pre>";
+                // var_dump(Validator::is_schedule($vars['schedule']));
+                // echo "</pre>";
+                // die();
 
 
-        if(!$vars['schedule'] || !Validator::is_schedule($vars['schedule'])) {
-            $errors['schedule']=__('Valid schedule required');
-        }elseif(($eid=Schedule::getIdBySchedule($vars['schedule'])) && $eid!=$id) {
-            $errors['schedule']=__('schedule already exists');
-        }elseif($cfg && !strcasecmp($cfg->getAdminSchedule(), $vars['schedule'])) {
-            $errors['schedule']=__('schedule already used as admin schedule!');
-        }elseif(Staff::getIdBySchedule($vars['schedule'])) { //make sure the email doesn't belong to any of the staff
-            $errors['schedule']=__('schedule in use by an agent');
-        }
+        // if(($eid=Schedule::getIdBySchedule($vars['schedule'])) && $eid!=$id) {
+        //     $errors['schedule']=__('schedule already exists');
+        // }elseif($cfg && !strcasecmp($cfg->getAdminSchedule(), $vars['schedule'])) {
+        //     $errors['schedule']=__('schedule already used as admin schedule!');
+        // }elseif(Staff::getIdBySchedule($vars['schedule'])) { //make sure the email doesn't belong to any of the staff
+        //     $errors['schedule']=__('schedule in use by an agent');
+        // }
 
-        if(!$vars['name'])
-            $errors['name']=__('schedule name required');
+        if(!$vars['username'])
+            $errors['username']=__('Agent required');
 
-        if($vars['mail_active'] || ($vars['smtp_active'] && $vars['smtp_auth'])) {
-            if(!$vars['userid'])
-                $errors['userid']=__('Username missing');
+        if(!$vars['date_start'])
+            $errors['date_start']=__('Start Date required');
 
-            if(!$id && !$vars['passwd'])
-                $errors['passwd']=__('Password required');
-            elseif($vars['passwd']
-                    && $vars['userid']
-                    && !Crypto::encrypt($vars['passwd'], SECRET_SALT, $vars['userid'])
-                    )
-                $errors['passwd'] = sprintf('%s - %s', __('Unable to encrypt password'), __('Get technical help!'));
-        }
+        if(!$vars['date_end'])
+            $errors['date_end']=__('End Date required');
 
-        list($vars['mail_protocol'], $encryption) = explode('/', $vars['mail_proto']);
-        $vars['mail_encryption'] = $encryption ?: 'NONE';
 
-        if($vars['mail_active']) {
-            //Check pop/imapinfo only when enabled.
-            if(!function_exists('imap_open'))
-                $errors['mail_active']= __("IMAP doesn't exist. PHP must be compiled with IMAP enabled.");
-            if(!$vars['mail_host'])
-                $errors['mail_host']=__('Host name required');
-            if(!$vars['mail_port'])
-                $errors['mail_port']=__('Port required');
-            if(!$vars['mail_protocol'])
-                $errors['mail_protocol']=__('Select protocol');
-            if(!$vars['mail_fetchfreq'] || !is_numeric($vars['mail_fetchfreq']))
-                $errors['mail_fetchfreq']=__('Fetch interval required');
-            if(!$vars['mail_fetchmax'] || !is_numeric($vars['mail_fetchmax']))
-                $errors['mail_fetchmax']=__('Maximum schedules required');
-
-            if(!isset($vars['postfetch']))
-                $errors['postfetch']=__('Indicate what to do with fetched schedules');
-            elseif(!strcasecmp($vars['postfetch'],'archive')) {
-                if ($vars['mail_protocol'] == 'POP')
-                    $errors['postfetch'] =  __('POP mail servers do not support folders');
-                elseif (!$vars['mail_archivefolder'])
-                    $errors['postfetch'] = __('Valid folder required');
-            }
-        }
-
-        if($vars['smtp_active']) {
-            if(!$vars['smtp_host'])
-                $errors['smtp_host']=__('Host name required');
-            if(!$vars['smtp_port'])
-                $errors['smtp_port']=__('Port required');
-        }
+        $this->username = $vars['username'];
+        $this->date_start = $vars['date_start'];
+        $this->date_end = $vars['date_end'];
 
         //abort on errors
         if ($errors)
             return false;
 
-        if(!$errors && ($vars['mail_host'] && $vars['userid'])) {
-            $existing = static::objects()
-                ->filter(array(
-                    'mail_host' => $vars['mail_host'],
-                    'userid' => $vars['userid']
-                ));
 
-            if ($id)
-                $existing->exclude(array('schedule_id' => $id));
-
-            if ($existing->exists())
-                $errors['userid']=$errors['host']=__('Host/userid combination already in use.');
-        }
-
-        $passwd = $vars['passwd'] ?: $vars['cpasswd'];
-        if(!$errors && $vars['mail_active']) {
-            //note: password is unencrypted at this point...MailFetcher expect plain text.
-            $fetcher = new MailFetcher(
-                    array(
-                        'host'  => $vars['mail_host'],
-                        'port'  => $vars['mail_port'],
-                        'username'  => $vars['userid'],
-                        'password'  => $passwd,
-                        'protocol'  => $vars['mail_protocol'],
-                        'encryption' => $vars['mail_encryption'])
-                    );
-            if(!$fetcher->connect()) {
-                //$errors['err']='Invalid login. Check '.Format::htmlchars($vars['mail_protocol']).' settings';
-                $errors['err']=sprintf(__('Invalid login. Check %s settings'),Format::htmlchars($vars['mail_protocol']));
-                $errors['mail']='<br>'.$fetcher->getLastError();
-            }elseif($vars['mail_archivefolder'] && !$fetcher->checkMailbox($vars['mail_archivefolder'],true)) {
-                 //$errors['postfetch']='Invalid or unknown mail folder! >> '.$fetcher->getLastError().'';
-                 $errors['postfetch']=sprintf(__('Invalid or unknown mail folder! >> %s'),$fetcher->getLastError());
-                 if(!$errors['mail'])
-                     $errors['mail']=__('Invalid or unknown archive folder!');
-            }
-        }
-
-        if(!$errors && $vars['smtp_active']) { //Check SMTP login only.
-            require_once 'Mail.php'; // PEAR Mail package
-            $smtp = mail::factory('smtp',
-                    array ('host' => $vars['smtp_host'],
-                           'port' => $vars['smtp_port'],
-                           'auth' => (bool) $vars['smtp_auth'],
-                           'username' =>$vars['userid'],
-                           'password' =>$passwd,
-                           'timeout'  =>20,
-                           'debug' => false,
-                           ));
-            $mail = $smtp->connect();
-            if(PEAR::isError($mail)) {
-                $errors['err']=__('Unable to log in. Check SMTP settings.');
-                $errors['smtp']='<br>'.$mail->getMessage();
-            }else{
-                $smtp->disconnect(); //Thank you, sir!
-            }
-        }
-
-        if($errors) return false;
-
-        $this->mail_errors = 0;
-        $this->mail_lastfetch = null;
-        $this->schedule = $vars['schedule'];
-        $this->name = Format::striptags($vars['name']);
-        //$this->dept_id = $vars['dept_id'];
-        //$this->priority_id = $vars['priority_id'];
-        $this->date_start = $vars['date_start'];
-        $this->date_end = $vars['date_end'];
-        $this->topic_id = $vars['topic_id'];
-        $this->noautoresp = isset($vars['noautoresp'])?1:0;
-        $this->userid = $vars['userid'];
-        $this->mail_active = $vars['mail_active'];
-        $this->mail_host = $vars['mail_host'];
-        $this->mail_protocol = $vars['mail_protocol']?$vars['mail_protocol']:'POP';
-        $this->mail_encryption = $vars['mail_encryption'];
-        $this->mail_port = $vars['mail_port']?$vars['mail_port']:0;
-        $this->mail_fetchfreq = $vars['mail_fetchfreq']?$vars['mail_fetchfreq']:0;
-        $this->mail_fetchmax = $vars['mail_fetchmax']?$vars['mail_fetchmax']:0;
-        $this->smtp_active = $vars['smtp_active'];
-        $this->smtp_host = $vars['smtp_host'];
-        $this->smtp_port = $vars['smtp_port']?$vars['smtp_port']:0;
-        $this->smtp_auth = $vars['smtp_auth'];
-        $this->smtp_spoofing = isset($vars['smtp_spoofing'])?1:0;
-        $this->notes = Format::sanitize($vars['notes']);
-
-        //Post fetch email handling...
-        if ($vars['postfetch'] && !strcasecmp($vars['postfetch'],'delete')) {
-            $this->mail_delete = 1;
-            $this->mail_archivefolder = null;
-        }
-        elseif($vars['postfetch'] && !strcasecmp($vars['postfetch'],'archive') && $vars['mail_archivefolder']) {
-            $this->mail_delete = 0;
-            $this->mail_archivefolder = $vars['mail_archivefolder'];
-        }
-        else {
-            $this->mail_delete = 0;
-            $this->mail_archivefolder = null;
-        }
-
-        if ($vars['passwd']) //New password - encrypt.
-            $this->userpass = Crypto::encrypt($vars['passwd'],SECRET_SALT, $vars['userid']);
 
         if ($this->save())
             return true;

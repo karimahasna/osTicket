@@ -52,10 +52,10 @@ if($_POST){
                     __('Correct any errors below and try again.'));
             }
 
-            echo "<pre>";
-            var_dump($errors);
-            echo "</pre>";
-            die();
+            // echo "<pre>";
+            // var_dump($errors);
+            // echo "</pre>";
+            // die();
 
             break;
         case 'mass_process':
@@ -102,7 +102,7 @@ if($schedule || ($_REQUEST['a'] && !strcasecmp($_REQUEST['a'],'add'))) {
     $page='schedule.inc.php';
 }
 
-$nav->setTabActive('schedules');
+$nav->setTabActive('schedule'); //tabs active sesuai dengan tabs[NAME] function getTabs() on class.nav.php
 $ost->addExtraHeader('<meta name="tip-namespace" content="' . $tip_namespace . '" />',
     "$('#content').data('tipNamespace', '".$tip_namespace."');");
 require(STAFFINC_DIR.'header.inc.php');

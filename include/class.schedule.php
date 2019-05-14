@@ -71,23 +71,17 @@ class Schedule extends VerySimpleModel {
 
    function delete() {
         global $cfg;
-        //Make sure we are not trying to delete default schedules.
-        if(!$cfg || $this->getId()==$cfg->getDefaultScheduleId() || $this->getId()==$cfg->getAlertScheduleId()) //double...double check.
-            return 0;
+
+        if (!$cfg  || $this->getId()==$cfg->getDefaultScheduleId())
+            return false;
 
         if (!parent::delete())
             return false;
 
-        Dept::objects()
+        Schedule::objects()
             ->filter(array('schedule_id' => $this->getId()))
             ->update(array(
                 'schedule_id' => $cfg->getDefaultScheduleId()
-            ));
-
-        Dept::objects()
-            ->filter(array('autoresp_schedule_id' => $this->getId()))
-            ->update(array(
-                'autoresp_schedule_id' => 0,
             ));
 
         return true;

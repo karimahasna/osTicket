@@ -122,7 +122,7 @@ $def_dept_name = $cfg->getDefaultDept()->getName();
                     <?php echo $default?'disabled="disabled" ':''; ?>>
                 </td>
                 <td><span class="ltr"><a href="schedules.php?id=<?php echo $id; ?>"><?php
-                    echo Format::htmlchars((string) $schedule->username); ?></a></span>
+                    echo Format::htmlchars((string)Staff::getNameByUsername($schedule->username)); ?></a></span>
                 <?php echo ($default) ?' <small>'.__('(Default)').'</small>' : ''; ?>
                 </td>
                 <td>&nbsp;<?php echo Format::date($schedule->date_start); ?></td>

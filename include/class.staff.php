@@ -295,6 +295,10 @@ implements AuthenticatedUser, EmailContact, TemplateVariable {
         return new AgentsName(array('first' => $this->ht['firstname'], 'last' => $this->ht['lastname']));
     }
 
+    function getUsernameAndName() {
+        return new AgentsName(array('first' => $this->ht['firstname'], 'last' => $this->ht['lastname'], 'username' => $this->ht['username']));
+    }
+
     function getAvatarAndName() {
         return $this->getAvatar().Format::htmlchars((string) $this->getName());
     }
@@ -796,6 +800,26 @@ implements AuthenticatedUser, EmailContact, TemplateVariable {
         return self::getStaffMembers(array('available'=>true));
     }
 
+    static function getAvailableStaffMembersWithUsername() {
+        global $cfg;
+
+        $members = static::objects();
+
+        $members = $members->filter(array(
+            'onvacation' => 0,
+            'isactive' => 1,
+        ));
+
+        $members = self::nsort($members);
+
+        $users=array();
+        foreach ($members as $M) {
+            $users[$M->getId()] = $M->getUsernameAndName();
+        }
+
+        return $users;
+    }
+
     static function nsort(QuerySet $qs, $path='', $format=null) {
         global $cfg;
 
@@ -823,6 +847,22 @@ implements AuthenticatedUser, EmailContact, TemplateVariable {
         $row = static::objects()->filter(array('email' => $email))
             ->values_flat('staff_id')->first();
         return $row ? $row[0] : 0;
+    }
+
+    static function getNameByUsername($username) {
+        $rowFirst = static::objects()->filter(array('username' => $username))
+            ->values_flat('firstname')->first();
+        $rowLast = static::objects()->filter(array('username' => $username))
+            ->values_flat('lastname')->first();
+
+        if($rowFirst && $rowLast)
+        {
+            return $rowFirst[0] . ' ' . $rowLast[0];
+        } else{
+            return 0;
+        }
+        
+        // return $row ? $row[0] : 0;
     }
 
 

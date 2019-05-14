@@ -83,12 +83,15 @@ $info=Format::htmlchars(($errors && $_POST)?$_POST:$info);
                 <select id="username" name="username">
                     <option value="0" selected="selected">&mdash; <?php echo __('Select an Agent OR a Team');?> &mdash;</option>
                     <?php
-                    if(($users=Staff::getAvailableStaffMembers())) {
+                    if(($users=Staff::getAvailableStaffMembersWithUsername())) {
                         echo '<OPTGROUP label="'.sprintf(__('Agents (%d)'), count($users)).'">';
                         foreach($users as $id => $name) {
+                            $dataObject = get_object_vars($name);
+                            $username = $dataObject['parts']['username'];
+                            $names = $dataObject['parts']['first'] . ' ' . $dataObject['parts']['last'];
                             $k="$id";
                             echo sprintf('<option value="%s" %s>%s</option>',
-                                        $name,(($info['schedule_id']==$id)?'selected="selected"':''),$name);
+                                        $username,(($info['username']==$username)?'selected="selected"':''),$names);
                         }
                         echo '</OPTGROUP>';
                     }

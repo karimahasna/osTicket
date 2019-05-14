@@ -17,17 +17,17 @@
 require('admin.inc.php');
 include_once(INCLUDE_DIR.'class.schedule.php');
 
-$schedule_id=null;
+$schedule=null;
 if($_REQUEST['id'] && !($schedule=Schedule::lookup($_REQUEST['id'])))
-    $errors['err']=sprintf(__('%s: Unknown or invalid ID.'), __('schedule_id'));
+    $errors['err']=sprintf(__('%s: Unknown or invalid ID.'), __('schedule'));
 
 if($_POST){
     switch(strtolower($_POST['do'])){
         case 'update':
-            if(!$schedule_id){
+            if(!$schedule){
                 $errors['err']=sprintf(__('%s: Unknown or invalid'), __('schedule'));
             }
-            elseif($schedule_id->update($_POST,$errors)){
+            elseif($schedule->update($_POST,$errors)){
                 $msg=sprintf(__('Successfully updated %s.'),
                     __('this schedule'));
             }

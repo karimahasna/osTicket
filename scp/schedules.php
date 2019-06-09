@@ -16,6 +16,8 @@
 
 require('admin.inc.php');
 include_once(INCLUDE_DIR.'class.schedule.php');
+include_once(INCLUDE_DIR.'class.email.php');
+include_once(INCLUDE_DIR.'class.staff.php');
 
 $schedule=null;
 if($_REQUEST['id'] && !($schedule=Schedule::lookup($_REQUEST['id'])))
@@ -52,10 +54,26 @@ if($_POST){
                     __('Correct any errors below and try again.'));
             }
 
+            //email_id (from), email (to), subj, message
+
+            $_POST['email_id'] = '1'; //email ID dari tab Emails (milih atau di set manual?)
+            $_POST['email'] = Staff::getEmailByUsername($_POST['username']);
+            $_POST['subj'] = 'osTicket test email'; //subject email
+            $_POST['message'] = 'Nyobain'; //isi email
+
             // echo "<pre>";
-            // var_dump($errors);
+            // var_dump($_POST);
             // echo "</pre>";
             // die();
+
+            $email=null;
+            $email=Email::lookup($_POST['email_id']);
+
+            if($email->send($_POST['email'],$_POST['subj'], 
+            Format::sanitize($_POST['message']), 
+            null, array('reply-tag'=>false))) {
+                Draft::deleteForNamespace('email.diag');
+            }
 
             break;
         case 'mass_process':

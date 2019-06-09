@@ -819,7 +819,7 @@ implements AuthenticatedUser, EmailContact, TemplateVariable {
 
         return $users;
     }
-
+    
     static function nsort(QuerySet $qs, $path='', $format=null) {
         global $cfg;
 
@@ -863,6 +863,13 @@ implements AuthenticatedUser, EmailContact, TemplateVariable {
         }
         
         // return $row ? $row[0] : 0;
+    }
+
+    static function getEmailByUsername($username) {
+        $email = static::objects()->filter(array('username' => $username))
+            ->values_flat('email')->first();
+        
+        return $email ? $email[0] : 0;
     }
 
 
